@@ -12,7 +12,7 @@ import { AIMessageChunk } from "@langchain/core/messages";
 import path from 'path';
 import fs from 'fs';
 
-export const runtime = "edge";
+//export const runtime = "edge";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
