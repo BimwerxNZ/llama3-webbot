@@ -37,8 +37,13 @@ AI:`;
 
 async function initModel() {
   const localCacheDir = path.join('/mnt/volume_syd1_01', 'local_cache');
-  if (!fs.existsSync(localCacheDir)) {
-    fs.mkdirSync(localCacheDir, { recursive: true });
+  try {
+    if (!fs.existsSync(localCacheDir)) {
+      fs.mkdirSync(localCacheDir, { recursive: true });
+      fs.chmodSync(localCacheDir, 0o777);
+    }
+  } catch (error) {
+    console.error('Error creating directory:', error);
   }
 
   return FlagEmbedding.init({
