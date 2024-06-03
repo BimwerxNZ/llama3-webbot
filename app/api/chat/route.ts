@@ -107,6 +107,9 @@ async function loadRetriever() {
 }
 
 export async function POST(req: NextRequest) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // Increase to 30-second timeout
+
   try {
     const body = await req.json();
     const messages = body.messages ?? [];
@@ -115,17 +118,16 @@ export async function POST(req: NextRequest) {
 
     const retriever = await loadRetriever();
     const relevantDocs = await retriever.getRelevantDocuments(currentMessageContent);
-    
+
     console.log('Relevant Documents:', relevantDocs);
-    
-    // Extract context from relevant documents
+
     const context = relevantDocs.map(doc => {
       if ('content' in doc) {
         return doc.content;
       } else if ('description' in doc) {
-        return doc.description; // Adjust according to the actual field name
+        return doc.description;
       } else {
-        return JSON.stringify(doc); // Fallback to stringify the entire document
+        return JSON.stringify(doc);
       }
     }).join("\n");
 
@@ -166,9 +168,25 @@ export async function POST(req: NextRequest) {
     const stream = await chain.stream(streamInput);
 
     console.log('API: Streaming response...');
+
+    stream.on('data', (chunk) => {
+      console.log('Received chunk:', chunk);
+    });
+
+    stream.on('end', () => {
+      console.log('Stream ended');
+    });
+
+    stream.on('error', (error) => {
+      console.error('Stream error:', error);
+    });
+
     return new StreamingTextResponse(stream);
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
+  } finally {
+    clearTimeout(timeout);
   }
 }
+
