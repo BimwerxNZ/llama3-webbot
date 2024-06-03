@@ -36,14 +36,17 @@ User: {input}
 AI:`;
 
 async function initModel() {
-  const localCacheDir = path.join('/mnt/volume_syd1_01', 'local_cache');
+  const localCacheDir = path.join('/tmp', 'local_cache');
   try {
     if (!fs.existsSync(localCacheDir)) {
       fs.mkdirSync(localCacheDir, { recursive: true });
       fs.chmodSync(localCacheDir, 0o777);
     }
+    // Test write access
+    fs.writeFileSync(path.join(localCacheDir, 'test_write.txt'), 'test');
+    console.log('Directory is writable');
   } catch (error) {
-    console.error('Error creating directory:', error);
+    console.error('Error creating or writing to directory:', error);
   }
 
   return FlagEmbedding.init({
@@ -51,6 +54,23 @@ async function initModel() {
     cacheDir: localCacheDir,
   });
 }
+
+//async function initModel() {
+//  const localCacheDir = path.join('/mnt/volume_syd1_01', 'local_cache');
+//  try {
+//    if (!fs.existsSync(localCacheDir)) {
+//      fs.mkdirSync(localCacheDir, { recursive: true });
+//      fs.chmodSync(localCacheDir, 0o777);
+//    }
+//  } catch (error) {
+//    console.error('Error creating directory:', error);
+//  }
+
+//  return FlagEmbedding.init({
+//    model: EmbeddingModel.BGEBaseENV15,
+//    cacheDir: localCacheDir,
+//  });
+//}
 
 async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
   const embeddings = model.embed([query]);
