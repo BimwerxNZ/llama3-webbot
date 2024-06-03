@@ -107,6 +107,8 @@ async function loadRetriever() {
 }
 
 export async function POST(req: NextRequest) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // Increase to 30-second timeout
   try {
     const body = await req.json();
     const messages = body.messages ?? [];
@@ -170,5 +172,7 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
+  } finally {
+    clearTimeout(timeout);
   }
 }
