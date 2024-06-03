@@ -9,6 +9,9 @@ import { HttpResponseOutputParser } from "langchain/output_parsers";
 import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
 import { AIMessageChunk } from "@langchain/core/messages";
 
+import path from 'path';
+import fs from 'fs';
+
 //export const runtime = "edge";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
