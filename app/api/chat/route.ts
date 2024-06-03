@@ -35,16 +35,19 @@ Current conversation:
 User: {input}
 AI:`;
 
+let cachedModel: FlagEmbedding | null = null;
+
 async function initModel() {
-  const localCacheDir = path.join('/tmp', 'local_cache');
-  if (!fs.existsSync(localCacheDir)) {
-    fs.mkdirSync(localCacheDir, { recursive: true });
+  if (cachedModel) {
+    return cachedModel;
   }
 
-  return FlagEmbedding.init({
+  const model = await FlagEmbedding.init({
     model: EmbeddingModel.BGEBaseENV15,
-    cacheDir: localCacheDir,
   });
+
+  cachedModel = model;
+  return model;
 }
 
 async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
