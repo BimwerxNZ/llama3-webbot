@@ -38,9 +38,9 @@ AI:`;
 async function initModel() {
     //const localCacheDir = path.join('/tmp', 'local_cache');
     const localCacheDir = '/tmp';
-    if (!fs.existsSync(localCacheDir)) {
-      fs.mkdirSync(localCacheDir, { recursive: true });
-    }
+    //if (!fs.existsSync(localCacheDir)) {
+      //fs.mkdirSync(localCacheDir, { recursive: true });
+    //}
   
     return FlagEmbedding.init({
       model: EmbeddingModel.BGEBaseENV15,
