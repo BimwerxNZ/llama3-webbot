@@ -36,7 +36,8 @@ User: {input}
 AI:`;
 
 async function initModel() {
-    const localCacheDir = path.join('/tmp', 'local_cache');
+    //const localCacheDir = path.join('/tmp', 'local_cache');
+    const localCacheDir = '/tmp';
     if (!fs.existsSync(localCacheDir)) {
       fs.mkdirSync(localCacheDir, { recursive: true });
     }
