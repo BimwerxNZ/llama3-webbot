@@ -5,7 +5,7 @@ import { useChat, Message } from 'ai/react';
 import Image from 'next/image';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FiSend } from 'react-icons/fi';  // Correctly import the send icon from react-icons
+import { FiSend } from 'react-icons/fi';
 
 export default function Chat() {
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,6 @@ export default function Chat() {
       content: input,
     };
 
-    // Update messages directly
     setMessages([...messages, newMessage]);
     setInput('');
 
@@ -81,7 +80,6 @@ export default function Chat() {
         content: aiMessageContent,
       };
 
-      // Update messages directly
       setMessages([...messages, newMessage, aiMessage]);
     } catch (error: unknown) {
       if (error instanceof Error) {
