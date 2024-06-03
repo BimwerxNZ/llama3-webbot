@@ -1,0 +1,49 @@
+Supabase procedure:
+
+1. SQL:
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+
+2. SQL:
+
+CREATE TABLE document_embeddings (
+    id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+    content text,
+    metadata jsonb,
+    embedding vector(768)
+);
+
+
+3. Create the match_documents function in Supabase (SQL):
+
+CREATE OR REPLACE FUNCTION match_documents(
+    query_embedding vector(768), 
+    match_count int = 5
+)
+RETURNS TABLE(
+    id uuid,
+    content text,
+    metadata jsonb,
+    similarity float
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        d.id,
+        d.content,
+        d.metadata,
+        (1 - (d.embedding <=> query_embedding)) AS similarity
+    FROM
+        documents d
+    ORDER BY
+        d.embedding <=> query_embedding
+    LIMIT
+        match_count;
+END;
+$$;
+
+
+
