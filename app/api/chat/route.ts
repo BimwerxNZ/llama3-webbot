@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     // gemma-7b-it
     const model = new ChatGroq({
       temperature: 0.0,
-      modelName: "llama3-8b-8192",
+      modelName: "mixtral-8x7b-32768",
       apiKey: GROQ_API_KEY,
     });
 
