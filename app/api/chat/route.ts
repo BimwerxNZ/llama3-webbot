@@ -9,10 +9,10 @@ import { HttpResponseOutputParser } from "langchain/output_parsers";
 import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
 import { AIMessageChunk } from "@langchain/core/messages";
 
-import path from 'path';
-import fs from 'fs';
+// import path from 'path';
+// import fs from 'fs';
 
-//export const runtime = "edge";
+// export const runtime = "edge";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
@@ -35,19 +35,10 @@ Current conversation:
 User: {input}
 AI:`;
 
-let cachedModel: FlagEmbedding | null = null;
-
 async function initModel() {
-  if (cachedModel) {
-    return cachedModel;
-  }
-
-  const model = await FlagEmbedding.init({
+  return FlagEmbedding.init({
     model: EmbeddingModel.BGEBaseENV15,
   });
-
-  cachedModel = model;
-  return model;
 }
 
 async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
