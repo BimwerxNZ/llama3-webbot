@@ -36,7 +36,7 @@ User: {input}
 AI:`;
 
 async function initModel() {
-  const localCacheDir = path.join('/mnt/volume', 'local_cache');
+  const localCacheDir = path.join('/mnt/volume_syd1_01', 'local_cache');
   if (!fs.existsSync(localCacheDir)) {
     fs.mkdirSync(localCacheDir, { recursive: true });
   }
