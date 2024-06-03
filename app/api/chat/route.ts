@@ -9,8 +9,8 @@ import { HttpResponseOutputParser } from "langchain/output_parsers";
 import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
 import { AIMessageChunk } from "@langchain/core/messages";
 
-// import path from 'path';
-// import fs from 'fs';
+import path from 'path';
+import fs from 'fs';
 
 // export const runtime = "edge";
 
@@ -36,8 +36,14 @@ User: {input}
 AI:`;
 
 async function initModel() {
+  const localCacheDir = path.join('/mnt/volume', 'local_cache');
+  if (!fs.existsSync(localCacheDir)) {
+    fs.mkdirSync(localCacheDir, { recursive: true });
+  }
+
   return FlagEmbedding.init({
     model: EmbeddingModel.BGEBaseENV15,
+    cacheDir: localCacheDir,
   });
 }
 
