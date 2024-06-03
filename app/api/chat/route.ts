@@ -43,6 +43,7 @@ async function initModel() {
   
     return FlagEmbedding.init({
       model: EmbeddingModel.BGEBaseENV15,
+      cacheDir: localCacheDir,
     });
   }
 
