@@ -36,17 +36,16 @@ User: {input}
 AI:`;
 
 async function initModel() {
-    //const localCacheDir = path.join('/tmp', 'local_cache');
-    const localCacheDir = '/tmp';
-    //if (!fs.existsSync(localCacheDir)) {
-      //fs.mkdirSync(localCacheDir, { recursive: true });
-    //}
-  
-    return FlagEmbedding.init({
-      model: EmbeddingModel.BGEBaseENV15,
-      cacheDir: localCacheDir,
-    });
+  const localCacheDir = path.join('/tmp', 'local_cache');
+  if (!fs.existsSync(localCacheDir)) {
+    fs.mkdirSync(localCacheDir, { recursive: true });
   }
+
+  return FlagEmbedding.init({
+    model: EmbeddingModel.BGEBaseENV15,
+    cacheDir: localCacheDir,
+  });
+}
 
 async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
   const embeddings = model.embed([query]);
