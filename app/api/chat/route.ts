@@ -131,9 +131,13 @@ export async function POST(req: NextRequest) {
 
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
 
+    // mixtral-8x7b-32768
+    // llama3-8b-8192
+    // llama3-70b-8192
+    // gemma-7b-it
     const model = new ChatGroq({
       temperature: 0.0,
-      modelName: "llama3-70b-8192",
+      modelName: "llama3-8b-8192",
       apiKey: GROQ_API_KEY,
     });
 
