@@ -8,11 +8,8 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
 import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
 import { AIMessageChunk } from "@langchain/core/messages";
-
 import path from 'path';
 import fs from 'fs';
-
-// export const runtime = "edge";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
@@ -42,9 +39,6 @@ async function initModel() {
       fs.mkdirSync(localCacheDir, { recursive: true });
       fs.chmodSync(localCacheDir, 0o777);
     }
-    // Test write access
-    //fs.writeFileSync(path.join(localCacheDir, 'test_write.txt'), 'test');
-    //console.log('Directory is writable');
   } catch (error) {
     console.error('Error creating or writing to directory:', error);
   }
@@ -55,28 +49,11 @@ async function initModel() {
   });
 }
 
-//async function initModel() {
-//  const localCacheDir = path.join('/mnt/volume_syd1_01', 'local_cache');
-//  try {
-//    if (!fs.existsSync(localCacheDir)) {
-//      fs.mkdirSync(localCacheDir, { recursive: true });
-//      fs.chmodSync(localCacheDir, 0o777);
-//    }
-//  } catch (error) {
-//    console.error('Error creating directory:', error);
-//  }
-
-//  return FlagEmbedding.init({
-//    model: EmbeddingModel.BGEBaseENV15,
-//    cacheDir: localCacheDir,
-//  });
-//}
-
 async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
   const embeddings = model.embed([query]);
   const result: number[][] = [];
   for await (const embedding of embeddings) {
-    result.push(embedding[0]); // Handle the nested array properly
+    result.push(embedding[0]);
   }
   return [...result[0]];
 }
@@ -85,7 +62,7 @@ async function embedDocuments(model: FlagEmbedding, docs: string[]): Promise<num
   const embeddings = model.embed(docs);
   const result: number[][] = [];
   for await (const embedding of embeddings) {
-    result.push(embedding[0]); // Handle the nested array properly
+    result.push(embedding[0]);
   }
   return result;
 }
@@ -106,7 +83,7 @@ async function loadRetriever() {
   return supabaseVectorStore.asRetriever();
 }
 
-export async function POST(req: NextRequest) {  
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const messages = body.messages ?? [];
@@ -115,26 +92,21 @@ export async function POST(req: NextRequest) {
 
     const retriever = await loadRetriever();
     const relevantDocs = await retriever.getRelevantDocuments(currentMessageContent);
-    
+
     console.log('Relevant Documents:', relevantDocs);
-    
-    // Extract context from relevant documents
+
     const context = relevantDocs.map(doc => {
       if ('content' in doc) {
         return doc.content;
       } else if ('description' in doc) {
-        return doc.description; // Adjust according to the actual field name
+        return doc.description;
       } else {
-        return JSON.stringify(doc); // Fallback to stringify the entire document
+        return JSON.stringify(doc);
       }
     }).join("\n");
 
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
 
-    // mixtral-8x7b-32768
-    // llama3-8b-8192
-    // llama3-70b-8192
-    // gemma-7b-it
     const model = new ChatGroq({
       temperature: 0.0,
       modelName: "mixtral-8x7b-32768",
