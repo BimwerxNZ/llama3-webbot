@@ -43,8 +43,8 @@ async function initModel() {
       fs.chmodSync(localCacheDir, 0o777);
     }
     // Test write access
-    fs.writeFileSync(path.join(localCacheDir, 'test_write.txt'), 'test');
-    console.log('Directory is writable');
+    //fs.writeFileSync(path.join(localCacheDir, 'test_write.txt'), 'test');
+    //console.log('Directory is writable');
   } catch (error) {
     console.error('Error creating or writing to directory:', error);
   }
@@ -107,9 +107,6 @@ async function loadRetriever() {
 }
 
 export async function POST(req: NextRequest) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000); // Increase to 30-second timeout
-
   try {
     const body = await req.json();
     const messages = body.messages ?? [];
@@ -118,16 +115,17 @@ export async function POST(req: NextRequest) {
 
     const retriever = await loadRetriever();
     const relevantDocs = await retriever.getRelevantDocuments(currentMessageContent);
-
+    
     console.log('Relevant Documents:', relevantDocs);
-
+    
+    // Extract context from relevant documents
     const context = relevantDocs.map(doc => {
       if ('content' in doc) {
         return doc.content;
       } else if ('description' in doc) {
-        return doc.description;
+        return doc.description; // Adjust according to the actual field name
       } else {
-        return JSON.stringify(doc);
+        return JSON.stringify(doc); // Fallback to stringify the entire document
       }
     }).join("\n");
 
@@ -168,25 +166,9 @@ export async function POST(req: NextRequest) {
     const stream = await chain.stream(streamInput);
 
     console.log('API: Streaming response...');
-
-    stream.on('data', (chunk) => {
-      console.log('Received chunk:', chunk);
-    });
-
-    stream.on('end', () => {
-      console.log('Stream ended');
-    });
-
-    stream.on('error', (error) => {
-      console.error('Stream error:', error);
-    });
-
     return new StreamingTextResponse(stream);
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
-  } finally {
-    clearTimeout(timeout);
   }
 }
-
