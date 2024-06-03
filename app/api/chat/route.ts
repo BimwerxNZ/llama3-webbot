@@ -33,10 +33,15 @@ User: {input}
 AI:`;
 
 async function initModel() {
-  return FlagEmbedding.init({
-    model: EmbeddingModel.BGEBaseENV15,
-  });
-}
+    const localCacheDir = path.join('/tmp', 'local_cache');
+    if (!fs.existsSync(localCacheDir)) {
+      fs.mkdirSync(localCacheDir, { recursive: true });
+    }
+  
+    return FlagEmbedding.init({
+      model: EmbeddingModel.BGEBaseENV15,
+    });
+  }
 
 async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
   const embeddings = model.embed([query]);
