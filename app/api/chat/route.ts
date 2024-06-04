@@ -122,18 +122,6 @@ export async function POST(req: NextRequest) {
 
     const outputParser = new HttpResponseOutputParser();
 
-    const chain: Runnable<any, any> = RunnableSequence.from([
-      {
-        docs: (input) => retriever.getRelevantDocuments(input.input),
-        input: (input) => input.input,
-        chat_history: (input) => input.chat_history,
-        context: (input) => input.context,
-      },
-      prompt,
-      model as RunnableLike<any, AIMessageChunk>,
-      outputParser,
-    ]);
-
     const streamInput = {
       context: context,
       chat_history: formattedPreviousMessages,
@@ -146,13 +134,20 @@ export async function POST(req: NextRequest) {
 
     console.log('Formatted Prompt:', formattedPrompt);
 
-    // Temporarily returning a static response to isolate the issue
-    console.log('API: Returning static response...');
-    return NextResponse.json({ message: "This is a test response to isolate the issue." });
+    // Direct model invocation
+    const response = await model.invoke({
+      input: formattedPrompt,
+    });
+
+    console.log('API: Model response received:', response);
+
+    const parsedResponse = await outputParser.parse(response);
+
+    console.log('API: Parsed response:', parsedResponse);
+
+    return NextResponse.json({ message: parsedResponse });
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
 }
-
-
