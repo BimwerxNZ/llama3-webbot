@@ -7,12 +7,10 @@ import { ChatGroq } from "@langchain/groq";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
 import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
-import { AIMessageChunk } from "@langchain/core/messages";
+import { AIMessageChunk, BaseMessage } from "@langchain/core/messages";
 
 import path from 'path';
 import fs from 'fs';
-
-// export const runtime = "edge";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
@@ -86,7 +84,7 @@ async function loadRetriever() {
   return supabaseVectorStore.asRetriever();
 }
 
-export async function POST(req: NextRequest) {  
+export async function POST(req: NextRequest) {
   try {
     console.log('API: Received request...');
     const body = await req.json();
@@ -102,7 +100,7 @@ export async function POST(req: NextRequest) {
 
     const relevantDocs = await retriever.getRelevantDocuments(currentMessageContent);
     console.log('Relevant Documents:', relevantDocs);
-    
+
     const context = relevantDocs.map(doc => {
       if ('content' in doc) {
         return doc.content;
@@ -150,7 +148,12 @@ export async function POST(req: NextRequest) {
 
     // Log before streaming
     console.log('API: Before chain.stream call');
-    const stream = await chain.stream(streamInput);
+    const stream = await chain.stream({
+      input: formattedPrompt,
+      docs: relevantDocs,
+      chat_history: formattedPreviousMessages,
+      context: context,
+    });
     // Log after streaming
     console.log('API: After chain.stream call');
 
