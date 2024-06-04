@@ -5,6 +5,9 @@ import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase"
 import { EmbeddingModel, FlagEmbedding } from "fastembed";
 import { ChatGroq } from "@langchain/groq";
 import { PromptTemplate } from "@langchain/core/prompts";
+import { HttpResponseOutputParser } from "langchain/output_parsers";
+import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
+import { AIMessageChunk } from "@langchain/core/messages";
 import path from 'path';
 import fs from 'fs';
 
