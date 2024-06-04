@@ -132,11 +132,27 @@ export async function POST(req: NextRequest) {
     // Log before streaming
     console.log('API: Before model.stream call');
     const stream = await model.stream(formattedPrompt);
+
+    // Transform the stream into a consumable format
+    const transformedStream = new ReadableStream({
+      async start(controller) {
+        const reader = stream.getReader();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          // Convert AIMessageChunk to string
+          const textChunk = value.toString();
+          controller.enqueue(new TextEncoder().encode(textChunk));
+        }
+        controller.close();
+      }
+    });
+
     // Log after streaming
     console.log('API: After model.stream call');
 
     console.log('API: Streaming response...');
-    return new StreamingTextResponse(stream);
+    return new StreamingTextResponse(transformedStream);
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
