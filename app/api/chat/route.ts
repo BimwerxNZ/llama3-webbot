@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
       }
     }).join("\n");
 
+    console.log('API: Initializing prompt template...');
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
 
     console.log('API: Initializing model...');
