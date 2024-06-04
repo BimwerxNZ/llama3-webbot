@@ -110,9 +110,13 @@ export async function POST(req: NextRequest) {
 
     const formattedPrompt = await prompt.format(streamInput);
 
-    const response = await model.invoke([new HumanMessage(formattedPrompt)]);
+    const messagesList = [
+      new HumanMessage(formattedPrompt)
+    ];
 
-    const parsedResponse = await outputParser.parse(response.message);
+    const response = await model.invoke(messagesList);
+
+    const parsedResponse = await outputParser.parse(response.text);
 
     return NextResponse.json({ message: parsedResponse });
   } catch (e: any) {
