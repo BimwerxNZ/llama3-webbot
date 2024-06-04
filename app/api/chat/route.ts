@@ -135,9 +135,7 @@ export async function POST(req: NextRequest) {
     console.log('Formatted Prompt:', formattedPrompt);
 
     // Direct model invocation
-    const response = await model.invoke({
-      input: formattedPrompt,
-    });
+    const response = await model.invoke(formattedPrompt);
 
     console.log('API: Model response received:', response);
 
@@ -151,3 +149,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
 }
+
