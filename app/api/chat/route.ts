@@ -134,13 +134,13 @@ export async function POST(req: NextRequest) {
 
     console.log('Formatted Prompt:', formattedPrompt);
 
-    // Direct model invocation
-    const response = await model.invoke({ input: formattedPrompt });
+    // Correct model invocation
+    const response = await model.invoke([new HumanMessage(formattedPrompt)]);
 
     console.log('API: Model response received:', response);
 
     // Assuming response contains text, parsing it directly
-    const parsedResponse = await outputParser.parse(response.message);
+    const parsedResponse = await outputParser.parse(response.text);
 
     console.log('API: Parsed response:', parsedResponse);
 
@@ -150,5 +150,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
 }
+
 
 
