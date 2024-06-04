@@ -59,25 +59,12 @@ export default function Chat() {
         throw new Error('Network response was not ok');
       }
 
-      if (!response.body) {
-        throw new Error('Response body is null');
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-      let aiMessageContent = '';
-
-      while (!done) {
-        const { value, done: streamDone } = await reader.read();
-        done = streamDone;
-        aiMessageContent += decoder.decode(value, { stream: !done });
-      }
+      const data = await response.json();
 
       const aiMessage: Message = {
         id: String(Date.now()),
         role: 'assistant',
-        content: aiMessageContent,
+        content: data.message,  // Adjust this based on the structure of your response
       };
 
       setMessages([...messages, newMessage, aiMessage]);
