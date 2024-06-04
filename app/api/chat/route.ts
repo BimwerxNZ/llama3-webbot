@@ -139,12 +139,15 @@ export async function POST(req: NextRequest) {
 
     console.log('Formatted Prompt:', formattedPrompt);
 
-    const stream = await chain.stream(streamInput);
+    // Instead of streaming, get the full response
+    const response = await chain.invoke(streamInput);
 
-    console.log('API: Streaming response...');
-    return new StreamingTextResponse(stream);
+    console.log('API: Response received:', response);
+
+    return NextResponse.json(response);
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
 }
+
