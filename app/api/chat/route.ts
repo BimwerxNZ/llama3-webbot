@@ -148,7 +148,11 @@ export async function POST(req: NextRequest) {
 
     console.log('Formatted Prompt:', formattedPrompt);
 
+    // Log before streaming
+    console.log('API: Before chain.stream call');
     const stream = await chain.stream(streamInput);
+    // Log after streaming
+    console.log('API: After chain.stream call');
 
     console.log('API: Streaming response...');
     return new StreamingTextResponse(stream);
