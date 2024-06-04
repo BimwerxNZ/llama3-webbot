@@ -85,14 +85,19 @@ async function loadRetriever() {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('API: Received request...');
     const body = await req.json();
+    console.log('API: Parsed request body:', body);
+
     const messages = body.messages ?? [];
     const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage).join("\n");
     const currentMessageContent = messages[messages.length - 1].content;
 
+    console.log('API: Loading retriever...');
     const retriever = await loadRetriever();
-    const relevantDocs = await retriever.getRelevantDocuments(currentMessageContent);
+    console.log('API: Retriever loaded');
 
+    const relevantDocs = await retriever.getRelevantDocuments(currentMessageContent);
     console.log('Relevant Documents:', relevantDocs);
 
     const context = relevantDocs.map(doc => {
@@ -105,8 +110,10 @@ export async function POST(req: NextRequest) {
       }
     }).join("\n");
 
+    console.log('API: Creating prompt template...');
     const prompt = PromptTemplate.fromTemplate(TEMPLATE);
 
+    console.log('API: Initializing model...');
     const model = new ChatGroq({
       temperature: 0.0,
       modelName: "mixtral-8x7b-32768",
@@ -139,15 +146,13 @@ export async function POST(req: NextRequest) {
 
     console.log('Formatted Prompt:', formattedPrompt);
 
-    // Instead of streaming, get the full response
-    const response = await chain.invoke(streamInput);
-
-    console.log('API: Response received:', response);
-
-    return NextResponse.json(response);
+    // Temporarily returning a static response to isolate the issue
+    console.log('API: Returning static response...');
+    return NextResponse.json({ message: "This is a test response to isolate the issue." });
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
   }
 }
+
 
