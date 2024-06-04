@@ -6,9 +6,6 @@ import { EmbeddingModel, FlagEmbedding } from "fastembed";
 import { ChatGroq } from "@langchain/groq";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
-import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
-import { AIMessageChunk, BaseMessage } from "@langchain/core/messages";
-
 import path from 'path';
 import fs from 'fs';
 
@@ -120,20 +117,6 @@ export async function POST(req: NextRequest) {
       apiKey: GROQ_API_KEY,
     });
 
-    const outputParser = new HttpResponseOutputParser();
-
-    const chain: Runnable<any, any> = RunnableSequence.from([
-      {
-        docs: (input) => retriever.getRelevantDocuments(input.input),
-        input: (input) => input.input,
-        chat_history: (input) => input.chat_history,
-        context: (input) => input.context,
-      },
-      prompt,
-      model as RunnableLike<any, AIMessageChunk>,
-      outputParser,
-    ]);
-
     const streamInput = {
       context: context,
       chat_history: formattedPreviousMessages,
@@ -147,15 +130,10 @@ export async function POST(req: NextRequest) {
     console.log('Formatted Prompt:', formattedPrompt);
 
     // Log before streaming
-    console.log('API: Before chain.stream call');
-    const stream = await chain.stream({
-      input: formattedPrompt,
-      docs: relevantDocs,
-      chat_history: formattedPreviousMessages,
-      context: context,
-    });
+    console.log('API: Before model.stream call');
+    const stream = await model.stream(formattedPrompt);
     // Log after streaming
-    console.log('API: After chain.stream call');
+    console.log('API: After model.stream call');
 
     console.log('API: Streaming response...');
     return new StreamingTextResponse(stream);
