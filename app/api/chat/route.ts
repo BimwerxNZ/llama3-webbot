@@ -117,6 +117,20 @@ export async function POST(req: NextRequest) {
       apiKey: GROQ_API_KEY,
     });
 
+    const outputParser = new HttpResponseOutputParser();
+
+    const chain: Runnable<any, any> = RunnableSequence.from([
+      {
+        docs: (input) => retriever.getRelevantDocuments(input.input),
+        input: (input) => input.input,
+        chat_history: (input) => input.chat_history,
+        context: (input) => input.context,
+      },
+      prompt,
+      model as RunnableLike<any, AIMessageChunk>,
+      outputParser,
+    ]);
+
     const streamInput = {
       context: context,
       chat_history: formattedPreviousMessages,
@@ -129,35 +143,10 @@ export async function POST(req: NextRequest) {
 
     console.log('Formatted Prompt:', formattedPrompt);
 
-    // Log before streaming
-    console.log('API: Before model.stream call');
-    try {
-      const stream = await model.stream(formattedPrompt);
+    const stream = await chain.stream(streamInput);
 
-      // Transform the stream into a consumable format
-      const transformedStream = new ReadableStream({
-        async start(controller) {
-          const reader = stream.getReader();
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            // Convert AIMessageChunk to string
-            const textChunk = value.toString();
-            controller.enqueue(new TextEncoder().encode(textChunk));
-          }
-          controller.close();
-        }
-      });
-
-      // Log after streaming
-      console.log('API: After model.stream call');
-
-      console.log('API: Streaming response...');
-      return new StreamingTextResponse(transformedStream);
-    } catch (streamError) {
-      console.error('API: Error during streaming:', streamError);
-      throw streamError;
-    }
+    console.log('API: Streaming response...');
+    return new StreamingTextResponse(stream);
   } catch (e: any) {
     console.error('API Error:', e);
     return NextResponse.json({ error: e.message }, { status: e.status ?? 500 });
