@@ -5,7 +5,7 @@ import { useChat, Message } from 'ai/react';
 import Image from 'next/image';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FiSend } from 'react-icons/fi';
+import { FiSend } from 'react-icons/fi';  // Correctly import the send icon from react-icons
 
 export default function Chat() {
   const [loading, setLoading] = useState(false);
@@ -43,6 +43,7 @@ export default function Chat() {
       content: input,
     };
 
+    // Update messages directly
     setMessages([...messages, newMessage]);
     setInput('');
 
@@ -59,14 +60,28 @@ export default function Chat() {
         throw new Error('Network response was not ok');
       }
 
-      const data = await response.json();
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let done = false;
+      let aiMessageContent = '';
+
+      while (!done) {
+        const { value, done: streamDone } = await reader.read();
+        done = streamDone;
+        aiMessageContent += decoder.decode(value, { stream: !done });
+      }
 
       const aiMessage: Message = {
         id: String(Date.now()),
         role: 'assistant',
-        content: data.message,  // Adjust this based on the structure of your response
+        content: aiMessageContent,
       };
 
+      // Update messages directly
       setMessages([...messages, newMessage, aiMessage]);
     } catch (error: unknown) {
       if (error instanceof Error) {
