@@ -19,7 +19,7 @@ const EMAIL_USER = process.env.EMAIL_USER!;
 const EMAIL_PASS = process.env.EMAIL_PASS!;
 const EMAIL_RECIPIENT = process.env.EMAIL_RECIPIENT!;
 
-console.log('SUPABASE_URL:' process.env.SUPABASE_URL!);
+console.log('SUPABASE_URL:' + process.env.SUPABASE_URL!);
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
