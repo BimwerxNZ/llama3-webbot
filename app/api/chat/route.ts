@@ -10,7 +10,7 @@ import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnab
 import { AIMessageChunk } from "@langchain/core/messages";
 import nodemailer from "nodemailer";
 
-const SUPABASE_URL = process.env.SUPABASE_URL!;
+const SUPABASE_URL = process.env.SUPABASE_URL?.trim()!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
 const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 const EMAIL_HOST = process.env.EMAIL_HOST!;
@@ -19,7 +19,12 @@ const EMAIL_USER = process.env.EMAIL_USER!;
 const EMAIL_PASS = process.env.EMAIL_PASS!;
 const EMAIL_RECIPIENT = process.env.EMAIL_RECIPIENT!;
 
-console.log('SUPABASE_URL:' + process.env.SUPABASE_URL!);
+if (!SUPABASE_URL.startsWith('http')) {
+  console.error('Invalid SUPABASE_URL:', SUPABASE_URL);
+  throw new Error('SUPABASE_URL is invalid or missing the protocol (e.g., https)');
+}
+
+console.log('SUPABASE_URL:', SUPABASE_URL);
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
