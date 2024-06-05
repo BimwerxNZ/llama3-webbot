@@ -5,7 +5,8 @@ import { useChat, Message } from 'ai/react';
 import Image from 'next/image';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FiSend } from 'react-icons/fi';  // Correctly import the send icon from react-icons
+import { FiSend } from 'react-icons/fi';
+import ReactMarkdown from 'react-markdown';  // Import react-markdown
 
 export default function Chat() {
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,8 @@ export default function Chat() {
 
     if (!input) return;
 
+    console.log("Submitting question...");
+
     setLoading(true);
 
     const newMessage: Message = {
@@ -43,11 +46,11 @@ export default function Chat() {
       content: input,
     };
 
-    // Update messages directly
     setMessages([...messages, newMessage]);
     setInput('');
 
     try {
+      console.log("Sending request to API...");
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -81,7 +84,7 @@ export default function Chat() {
         content: aiMessageContent,
       };
 
-      // Update messages directly
+      console.log("API response received: ", aiMessageContent);
       setMessages([...messages, newMessage, aiMessage]);
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -90,15 +93,16 @@ export default function Chat() {
       }
     } finally {
       setLoading(false);
+      console.log("Finished fetching response.");
     }
   };
 
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch bg-gray-100 min-h-screen">
-      <div className="flex flex-col items-center justify-center p-4 bg-blue-600 text-white rounded-t-md shadow-md">
-        <h1 className="text-2xl font-bold">BIMWERX Bob</h1>
+      <div className="header w-full max-w-md mx-auto">
+        <h1>BIMWERX Bob</h1>
       </div>
-      <div className="flex flex-col space-y-4 p-4 bg-white shadow-md rounded-md overflow-auto" style={{ flexGrow: 1 }}>
+      <div className="content flex flex-col space-y-4 p-4 bg-white shadow-md rounded-md overflow-auto" style={{ flexGrow: 1 }}>
         {messages.map((m) => (
           <div key={m.id} className={`whitespace-pre-wrap p-2 rounded-md flex items-start ${m.role === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-200 text-gray-800'}`}>
             {m.role === 'assistant' && (
@@ -108,14 +112,15 @@ export default function Chat() {
             )}
             <div>
               <strong>{m.role === 'user' ? 'User: ' : 'AI: '}</strong>
-              {m.content}
+              <ReactMarkdown>{m.content}</ReactMarkdown>  {/* Render markdown content */}
             </div>
           </div>
         ))}
         {loading && (
-          <div className="whitespace-pre-wrap p-2 rounded-md flex items-start bg-gray-200 text-gray-800">
+          <div className="whitespace-pre-wrap p-2 rounded-md flex items-start bg-gray-200 text-gray-800 animated-background">
+            <div className="loader mr-2"></div> {/* Spinning loader */}
             <div>
-              <strong>AI: </strong>Thinking...
+              <strong>AI: </strong><span className="ellipsis">Thinking</span>  {/* Apply ellipsis animation */}
             </div>
           </div>
         )}

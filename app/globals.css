@@ -1,3 +1,4 @@
+/* Existing global styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,10 +25,86 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+  margin: 0;
+  padding: 0;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+.ellipsis::after {
+  content: '...';
+  animation: ellipsis 1s infinite;
+}
+
+@keyframes ellipsis {
+  0% {
+    content: '';
+  }
+  33% {
+    content: '.';
+  }
+  66% {
+    content: '..';
+  }
+  100% {
+    content: '...';
+  }
+}
+
+.loader {
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.header {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa); /* Gradient background */
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0; /* Remove the gap above */
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 10;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.content {
+  padding-top: 64px; /* Adjust padding to prevent content overlap */
+}
+
+.animated-background {
+  animation: gradientAnimation 1.5s infinite;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-color: #f0f0f0;
+  }
+  50% {
+    background-color: #d0d0d0;
+  }
+  100% {
+    background-color: #f0f0f0;
   }
 }
