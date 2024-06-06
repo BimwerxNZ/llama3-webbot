@@ -10,7 +10,7 @@ import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnab
 import { AIMessageChunk } from "@langchain/core/messages";
 import nodemailer from "nodemailer";
 
-const SUPABASE_URL = process.env.SUPABASE_URL?.trim()!;
+const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
 const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 const EMAIL_HOST = process.env.EMAIL_HOST!;
@@ -18,13 +18,6 @@ const EMAIL_PORT = parseInt(process.env.EMAIL_PORT!, 10);
 const EMAIL_USER = process.env.EMAIL_USER!;
 const EMAIL_PASS = process.env.EMAIL_PASS!;
 const EMAIL_RECIPIENT = process.env.EMAIL_RECIPIENT!;
-
-if (!SUPABASE_URL.startsWith('http')) {
-  console.error('Invalid SUPABASE_URL:', SUPABASE_URL);
-  throw new Error('SUPABASE_URL is invalid or missing the protocol (e.g., https)');
-}
-
-console.log('SUPABASE_URL:', SUPABASE_URL);
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -86,6 +79,7 @@ async function loadRetriever() {
 }
 
 async function sendEmail(subject: string, text: string) {
+  console.log("Sending Email: %s", text);
   let transporter = nodemailer.createTransport({
     host: EMAIL_HOST,
     port: EMAIL_PORT,
@@ -171,24 +165,17 @@ export async function POST(req: NextRequest) {
       aiResponse += decoder.decode(chunk, { stream: true });
     }
 
-    // Check if AI response includes the confirmation message
-    let emailRequested = aiResponse.includes("I am not sure, let me connect you with a BIMWERX person. Please provide your contact email.");
-    let userEmailProvided = false;
-    let userEmail = "";
-
     // Check if user email was provided in the current message
+    let userEmail = "";
+    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b/i;
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === "user" && lastMessage.content.includes("@")) {
-        userEmailProvided = true;
-        userEmail = lastMessage.content;
+      if (lastMessage.role === "user" && emailRegex.test(lastMessage.content)) {
+        userEmail = lastMessage.content.match(emailRegex)?.[0] ?? "";
       }
     }
 
-    // Check if AI response includes the final confirmation message
-    let emailConfirmed = aiResponse.includes("I'm sending your query to the BIMWERX Team right away...");
-
-    if (emailConfirmed && userEmailProvided) {
+    if (userEmail) {
       const emailSubject = "User needs assistance from BIMWERX";
       const emailText = `A user asked a question that the AI could not answer. Here is the conversation so far:\n\n${formattedPreviousMessages}\n\nUser: ${currentMessageContent}\nAI: ${aiResponse}\n\nUser's Contact Email: ${userEmail}`;
       await sendEmail(emailSubject, emailText);
