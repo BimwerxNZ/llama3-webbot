@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 import { createClient } from "@supabase/supabase-js";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
-import { EmbeddingModel, FlagEmbedding } from "fastembed";
+import { OpenAIEmbeddings } from "@langchain/openai";
 import { ChatGroq } from "@langchain/groq";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { HttpResponseOutputParser } from "langchain/output_parsers";
 import { RunnableSequence, Runnable, RunnableLike } from "@langchain/core/runnables";
 import { AIMessageChunk } from "@langchain/core/messages";
 import nodemailer from "nodemailer";
+import { Pinecone } from "@pinecone-database/pinecone";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_KEY!;
+const PINECONE_API_KEY = process.env.PINECONE_API_KEY!;
+const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT!;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 const EMAIL_HOST = process.env.EMAIL_HOST!;
 const EMAIL_PORT = parseInt(process.env.EMAIL_PORT!, 10);
@@ -20,6 +24,12 @@ const EMAIL_PASS = process.env.EMAIL_PASS!;
 const EMAIL_RECIPIENT = process.env.EMAIL_RECIPIENT!;
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const pinecone = new Pinecone({
+  apiKey: PINECONE_API_KEY
+});
+
+//const indexName = "documents";
 
 const formatMessage = (message: VercelChatMessage) => {
   return `${message.role}: ${message.content}`;
@@ -39,27 +49,20 @@ User: {input}
 AI:`;
 
 async function initModel() {
-  return FlagEmbedding.init({
-    model: EmbeddingModel.BGEBaseENV15,
+  return new OpenAIEmbeddings({
+    modelName: "text-embedding-ada-002",
+    apiKey: OPENAI_API_KEY
   });
 }
 
-async function embedQuery(model: FlagEmbedding, query: string): Promise<number[]> {
-  const embeddings = model.embed([query]);
-  const result: number[][] = [];
-  for await (const embedding of embeddings) {
-    result.push(embedding[0]); // Handle the nested array properly
-  }
-  return [...result[0]];
+async function embedQuery(model: OpenAIEmbeddings, query: string): Promise<number[]> {
+  const embeddings = await model.embedQuery(query);
+  return embeddings;
 }
 
-async function embedDocuments(model: FlagEmbedding, docs: string[]): Promise<number[][]> {
-  const embeddings = model.embed(docs);
-  const result: number[][] = [];
-  for await (const embedding of embeddings) {
-    result.push(embedding[0]); // Handle the nested array properly
-  }
-  return result;
+async function embedDocuments(model: OpenAIEmbeddings, docs: string[]): Promise<number[][]> {
+  const embeddings = await model.embedDocuments(docs);
+  return embeddings;
 }
 
 async function loadRetriever() {
@@ -71,8 +74,8 @@ async function loadRetriever() {
 
   const supabaseVectorStore = new SupabaseVectorStore(embeddings, {
     client: supabaseClient,
-    tableName: "documents",
-    queryName: "match_documents",
+    tableName: "document2", // Ensure this matches your table name
+    queryName: "match_documents3",
   });
 
   return supabaseVectorStore.asRetriever();
