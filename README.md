@@ -163,7 +163,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
     <div id="chatbot-iframe-container">
         <iframe
             id="chatbot-iframe"
-            src="https://llama3-webbot-52itmgurg-bimwerxnzs-projects.vercel.app"
+            src="https://[YOUR VERCEL APP URL].vercel.app"
         ></iframe>
     </div>
 
