@@ -9,7 +9,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' *;"
+          "value": "frame-ancestors 'self' https://bimwerxfea.com;" // Only allows your domain
         }
       ]
     }
